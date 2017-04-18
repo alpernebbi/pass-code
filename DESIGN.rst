@@ -60,3 +60,71 @@ Encoding and decoding
 - ``encode()`` and ``decode()`` take one argument, echo one result 
   (or nothing on nonexistent mapping).
 - ``pass encode`` and ``pass decode`` commands for user.
+
+=============
+Pass Commands
+=============
+
+pass code init
+--------------
+- Fail if ``pass init`` not run already.
+- Create ``.passcode`` if doesn't exist.
+- Encode current passwords if they exist.
+- Check ``.passcode`` and skip encoded ones
+- If git repo, make a new branch and do ``git filter-branch`` magic.
+- Don't forget to change filenames in commit messages
+- ``pass init --path=sub-folder`` is going to cause problems
+- Maybe preserve folder structure with ``encoded:*/decoded`` in 
+  ``.passcode`` ?
+
+pass code ls
+------------
+We probably have all names in ``.passcode``, but better to be sure.
+
+- Read ``pass ls``
+- Skip first line completely but only four characters on the rest.
+- Move the filenames through ``decode()``, then sort.
+- If ``subfolder`` arg given, filter/modify filenames as necessary.
+- Reconstruct tree from filenames.
+  
+pass code grep
+--------------
+Read ``pass grep <string>`` and decode filenames in output
+
+pass code find
+--------------
+Same as ``ls`` but filter by the given argument.
+
+pass code show
+--------------
+Encode, passthrough.
+
+pass code insert
+----------------
+Encode, add mapping, passthrough.
+
+pass code edit
+----------------
+Encode, add mapping if not exists, passthrough. 
+Very easy to find the decoded argument.
+
+pass code generate
+------------------
+Encode, add mapping, passthrough. 
+Careful with the ``pass-length`` argument.
+
+pass code rm
+------------
+Encode, remove from ``.passcode``, passthrough.
+Mind the ``--recursive`` folder removal.
+
+pass code mv
+------------
+Encode, add/remove new/old mappings, passthrough.
+Mind moving into folders.
+
+pass code cp
+------------
+Encode, add mapping, passthrough.
+Mind copying into folders.
+
