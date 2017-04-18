@@ -128,3 +128,22 @@ pass code cp
 Encode, add mapping, passthrough.
 Mind copying into folders.
 
+===================
+Additional Commands
+===================
+
+pass encode
+-----------
+Encode given filename
+
+pass decode
+-----------
+Decode given filename
+
+pass code help
+--------------
+Display usage
+
+pass code version
+-----------------
+Display version
