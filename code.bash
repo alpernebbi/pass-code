@@ -32,6 +32,30 @@ code_encode() { while read -r dec; do echo "${codec[Dx$dec]}"; done; }
 code_decode() { while read -r enc; do echo "${codec[Ex$enc]}"; done; }
 
 
+# I'm going to cheat and create an equivalent folder hierarchy,
+# and call the actual "tree" on it.
+code_format_as_tree() {
+	# "Password Store" or name of a subfolder as the first line
+	title="$1"
+
+	# Sets $SECURE_TMPDIR. Don't warn since all files we create
+	# are empty anyway.
+	tmpdir nowarn
+	local fakestore
+	fakestore="$(mktemp -d "$SECURE_TMPDIR/fakestore.XXXXXXX")"
+
+	# Input filenames are relative to password store
+	while read -r relpath; do
+		check_sneaky_paths "$relpath"
+		mkdir -p "$(dirname "$fakestore/$relpath")"
+		touch "$fakestore/$relpath"
+	done
+
+	echo "$title"
+	tree -C -l --noreport "$fakestore" \
+		| tail -n +2
+}
+
 cmd_code_version() {
 	cat <<- EOF
 	$PROGRAM-code version 0.1.0
