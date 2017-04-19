@@ -35,8 +35,7 @@ code_decode() { while read -r enc; do echo "${codec[Ex$enc]}"; done; }
 # I'm going to cheat and create an equivalent folder hierarchy,
 # and call the actual "tree" on it.
 code_format_as_tree() {
-	# "Password Store" or name of a subfolder as the first line
-	title="$1"
+	local subfolder="$1"
 
 	# Sets $SECURE_TMPDIR. Don't warn since all files we create
 	# are empty anyway.
@@ -51,9 +50,26 @@ code_format_as_tree() {
 		touch "$fakestore/$relpath"
 	done
 
-	echo "$title"
-	tree -C -l --noreport "$fakestore" \
+	# "Password Store" or name of the subfolder as the first line
+	if [[ -z "$subfolder" ]]; then
+		echo "Password Store"
+	else
+		echo "$subfolder"
+	fi
+
+	tree -C -l --noreport "$fakestore/$subfolder" \
 		| tail -n +2
+}
+
+# Take newline seperated list of files, choose those in path/to/sub/
+code_filter_subfolder() {
+	local subfolder="$1"
+	if [[ -z "$subfolder" ]]; then
+		cat
+	else
+		# Accept "path/to/sub/" and "path/to/sub" as inputs
+		grep "^${subfolder%%/}/"
+	fi
 }
 
 cmd_code_version() {
@@ -64,12 +80,16 @@ cmd_code_version() {
 
 # Assumes the encoded hierarchy is flat
 cmd_code_ls() {
+	local subfolder="$1"
+	check_sneaky_paths "$subfolder"
+
 	code_decrypt
 	cmd_show \
 		| tail -n +2 \
 		| cut -d ' ' -f 2 \
 		| code_decode \
-		| code_format_as_tree "Password Store"
+		| code_filter_subfolder "$subfolder" \
+		| code_format_as_tree "$subfolder"
 }
 
 
