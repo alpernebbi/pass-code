@@ -39,8 +39,8 @@ fi
 
 export GIT_DIR="$PASSWORD_STORE_DIR/.git"
 export GIT_WORK_TREE="$PASSWORD_STORE_DIR"
-git config --global user.email "Pass-Automated-Testing-Suite@zx2c4.com"
-git config --global user.name "Pass Automated Testing Suite"
+git config --local user.email "Pass-Automated-Testing-Suite@zx2c4.com"
+git config --local user.name "Pass Automated Testing Suite"
 
 
 # Test using system pass binary
