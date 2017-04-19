@@ -49,8 +49,12 @@ test_expect_success 'pass ls output should be scrambled' '
 	_EOF_
 '
 
+remove_colors() { sed -e "s/\x1B\[[0-9;]*m//g"; }
+
 test_expect_failure 'pass-code ls output should be decoded' '
-	diff -U99 - <("$PASS" code ls) <<- "_EOF_"
+	diff -U99 - \
+		<("$PASS" code ls | remove_colors) \
+		<<- "_EOF_"
 	Password Store
 	|-- a
 	|   |-- a
@@ -74,7 +78,9 @@ test_expect_failure 'pass-code ls output should be decoded' '
 '
 
 test_expect_failure 'pass-code ls subfolder 1' '
-	diff -U99 - <("$PASS" code ls a) <<- "_EOF_"
+	diff -U99 - \
+		<("$PASS" code ls a | remove_colors) \
+		<<- "_EOF_"
 	a
 	|-- a
 	|   |-- a
@@ -87,7 +93,9 @@ test_expect_failure 'pass-code ls subfolder 1' '
 '
 
 test_expect_failure 'pass-code ls subfolder 2' '
-	diff -U99 - <("$PASS" code ls a/a) <<- "_EOF_"
+	diff -U99 - \
+		<("$PASS" code ls a/a | remove_colors) \
+		<<- "_EOF_"
 	a/a
 	|-- a
 	|   `-- a
@@ -96,14 +104,18 @@ test_expect_failure 'pass-code ls subfolder 2' '
 '
 
 test_expect_failure 'pass-code ls subfolder 3' '
-	diff -U99 - <("$PASS" code ls a/a) <<- "_EOF_"
+	diff -U99 - \
+		<("$PASS" code ls a/a/a | remove_colors) \
+		<<- "_EOF_"
 	a/a/a
 	`-- a
 	_EOF_
 '
 
 test_expect_failure 'pass-code ls subfolder 4' '
-	diff -U99 - <("$PASS" code ls d) <<- "_EOF_"
+	diff -U99 - \
+		<("$PASS" code ls d | remove_colors) \
+		<<- "_EOF_"
 	d
 	`-- d
 	    |-- a
