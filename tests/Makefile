@@ -24,7 +24,7 @@ PROVE ?= prove
 AGGREGATE_SCRIPT ?= aggregate-results.sh
 DEFAULT_TEST_TARGET ?= test
 
-T = $(sort $(wildcard *.t))
+T = $(sort $(wildcard t[0-9][0-9][0-9][0-9]-*.sh))
 
 all: $(DEFAULT_TEST_TARGET)
 
