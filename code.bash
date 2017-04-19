@@ -16,4 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+cmd_code_version() {
+	cat <<- EOF
+	$PROGRAM-code version 0.1.0
+	EOF
+}
 
+case "$1" in
+	version|--version|-v) shift; cmd_code_version "$@" ;;
+	*) exit 1;;
+esac
