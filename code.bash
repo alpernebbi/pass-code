@@ -62,7 +62,19 @@ cmd_code_version() {
 	EOF
 }
 
+# Assumes the encoded hierarchy is flat
+cmd_code_ls() {
+	code_decrypt
+	cmd_show \
+		| tail -n +2 \
+		| cut -d ' ' -f 2 \
+		| code_decode \
+		| code_format_as_tree "Password Store"
+}
+
+
 case "$1" in
 	version|--version|-v) shift; cmd_code_version "$@" ;;
+	list|ls)              shift; cmd_code_ls "$@" ;;
 	*) exit 1;;
 esac
