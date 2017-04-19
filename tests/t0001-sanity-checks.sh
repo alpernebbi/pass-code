@@ -14,4 +14,8 @@ test_expect_success 'Make sure we can initialize our test store' '
 	[[ $(cat "$PASSWORD_STORE_DIR/.gpg-id") == "$KEY1" ]]
 '
 
+test_expect_success 'Make sure pass-code can run' '
+	"$PASS" code version | grep "pass-code version"
+'
+
 test_done
