@@ -77,7 +77,7 @@ test_expect_success 'pass-code ls output should be decoded' '
 	_EOF_
 '
 
-test_expect_failure 'pass-code ls subfolder 1' '
+test_expect_success 'pass-code ls subfolder 1' '
 	diff -U99 - \
 		<("$PASS" code ls a | remove_colors) \
 		<<- "_EOF_"
@@ -92,7 +92,7 @@ test_expect_failure 'pass-code ls subfolder 1' '
 	_EOF_
 '
 
-test_expect_failure 'pass-code ls subfolder 2' '
+test_expect_success 'pass-code ls subfolder 2' '
 	diff -U99 - \
 		<("$PASS" code ls a/a | remove_colors) \
 		<<- "_EOF_"
@@ -103,7 +103,7 @@ test_expect_failure 'pass-code ls subfolder 2' '
 	_EOF_
 '
 
-test_expect_failure 'pass-code ls subfolder 3' '
+test_expect_success 'pass-code ls subfolder 3' '
 	diff -U99 - \
 		<("$PASS" code ls a/a/a | remove_colors) \
 		<<- "_EOF_"
@@ -112,7 +112,7 @@ test_expect_failure 'pass-code ls subfolder 3' '
 	_EOF_
 '
 
-test_expect_failure 'pass-code ls subfolder 4' '
+test_expect_success 'pass-code ls subfolder 4' '
 	diff -U99 - \
 		<("$PASS" code ls d | remove_colors) \
 		<<- "_EOF_"
