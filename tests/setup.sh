@@ -5,6 +5,7 @@
 #   $GPG	Name of gpg executable
 #   $KEY{1..5}	GPG key ids of testing keys
 #   $TEST_HOME	This folder
+#   $EXT_HOME   Folder containing pass extensions to be tested
 
 
 # Unset config vars
@@ -63,3 +64,9 @@ KEY2="D774A374"  # pass test key 2
 KEY3="EB7D54A8"  # pass test key 3
 KEY4="E4691410"  # pass test key 4
 KEY5="39E5020C"  # pass test key 5
+
+# Enable extensions, load own extensions
+# $TEST_HOME is /path/to/git-repo/tests/
+EXT_HOME="$(dirname $TEST_HOME)"
+export PASSWORD_STORE_ENABLE_EXTENSIONS=true
+export PASSWORD_STORE_EXTENSIONS_DIR="$EXT_HOME"
