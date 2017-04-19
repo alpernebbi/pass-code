@@ -51,7 +51,7 @@ test_expect_success 'pass ls output should be scrambled' '
 
 remove_colors() { sed -e "s/\x1B\[[0-9;]*m//g"; }
 
-test_expect_failure 'pass-code ls output should be decoded' '
+test_expect_success 'pass-code ls output should be decoded' '
 	diff -U99 - \
 		<("$PASS" code ls | remove_colors) \
 		<<- "_EOF_"
