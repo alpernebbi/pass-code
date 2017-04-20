@@ -175,9 +175,14 @@ cmd_code_ls() {
 		| code_format_as_tree "$subfolder"
 }
 
+cmd_code_show() {
+	code_decrypt
+	cmd_show $(code_encode_args "$@")
+}
 
 case "$1" in
 	version|--version|-v) shift; cmd_code_version "$@" ;;
 	list|ls)              shift; cmd_code_ls "$@" ;;
+	show)                 shift; cmd_code_show "$@" ;;
 	*) exit 1;;
 esac
