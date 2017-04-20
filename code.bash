@@ -145,6 +145,16 @@ code_filter_subfolder() {
 	fi
 }
 
+# Encodes all encodable arguments, but leaves others intact.
+# Can be used like: set -- $(code_encode_args "$@")
+code_encode_args() {
+	local args=("$@")
+
+	for arg in "${args[@]}"; do
+		echo "${codec[Dx$arg]-$arg}"
+	done
+}
+
 cmd_code_version() {
 	cat <<- EOF
 	$PROGRAM-code version 0.1.0
