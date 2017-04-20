@@ -61,6 +61,15 @@ code_validate() {
 	done
 }
 
+# Print ENC:DEC pairs
+code_as_colons() {
+	for key in "${!codec[@]}"; do
+		if [[ "${key#Ex}" != "$key" ]]; then
+			echo "${key#Ex}:${codec[$key]}"
+		fi
+	done | sort -t ':' -k 2
+}
+
 # I'm going to cheat and create an equivalent folder hierarchy,
 # and call the actual "tree" on it.
 code_format_as_tree() {
