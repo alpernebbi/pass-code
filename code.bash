@@ -17,6 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 declare -A codec
+codec_modified=false
 
 # Decrypt the .passcode file and put it to an associative array so we
 # don't need to re-decrpyt it every time we encode/decode something.
@@ -31,6 +32,18 @@ code_decrypt() {
 code_encode() { while read -r dec; do echo "${codec[Dx$dec]}"; done; }
 code_decode() { while read -r enc; do echo "${codec[Ex$enc]}"; done; }
 
+# $1 is decoded, $2 is encoded
+code_add() {
+	codec["Dx$1"]="$2"
+	codec["Ex$2"]="$1"
+	codec_modified=true
+}
+
+code_remove() {
+	unset codec["Dx$1"]
+	unset codec["Ex$2"]
+	codec_modified=true
+}
 
 # I'm going to cheat and create an equivalent folder hierarchy,
 # and call the actual "tree" on it.
