@@ -45,6 +45,29 @@ code_remove() {
 	codec_modified=true
 }
 
+# Generate a random encoded filename and map it to given decoded $1
+code_add_random() {
+	local dec="$1"
+	local enc=""
+
+	while [[ -z "${codec[Dx$dec]+x}" ]]; do
+		read -r -n 16 enc \
+			< <(LC_ALL=C tr -dc "0-9a-z" < /dev/urandom)
+
+		if [[ ${#enc} -ne 16 ]]; then
+			die "Could not generate a random filename."
+		fi
+
+		# Don't break one-to-one mapping
+		if [[ -z "${codec[Ex$enc]+x}" ]]; then
+			code_add "$dec" "$enc"
+		else
+			# Don't overload the CPU
+			sleep 0.1
+		fi
+	done
+}
+
 # Check if codec is in valid format.
 # Only [ExENC]=DEC and [DxDEC]=ENC are allowed.
 # One-to-one mapping, so [Dx[ExENC]]=ENC and [Ex[DxDEC]]=DEC.
