@@ -70,6 +70,18 @@ code_as_colons() {
 	done | sort -t ':' -k 2
 }
 
+# If we have modified the mappings, rewrite the .passcode file and
+# put it back into the password-store.
+code_encrypt() {
+	if [[ "$codec_modified" = false ]]; then
+		return
+	fi
+
+	code_validate
+	code_as_colons \
+		| cmd_insert ".passcode" --multiline --force
+}
+
 # I'm going to cheat and create an equivalent folder hierarchy,
 # and call the actual "tree" on it.
 code_format_as_tree() {
