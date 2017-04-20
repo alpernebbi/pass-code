@@ -45,6 +45,22 @@ code_remove() {
 	codec_modified=true
 }
 
+# Check if codec is in valid format.
+# Only [ExENC]=DEC and [DxDEC]=ENC are allowed.
+# One-to-one mapping, so [Dx[ExENC]]=ENC and [Ex[DxDEC]]=DEC.
+code_validate() {
+	for key in "${!codec[@]}"; do
+		if [[ "${key#Ex}" != "${key#Dx}" && (
+			"${codec[Dx${codec[$key]}]}" = "${key#Ex}" ||
+			"${codec[Ex${codec[$key]}]}" = "${key#Dx}"
+		) ]]; then
+			continue
+		else
+			die "pass-code internal mapping is invalid."
+		fi
+	done
+}
+
 # I'm going to cheat and create an equivalent folder hierarchy,
 # and call the actual "tree" on it.
 code_format_as_tree() {
