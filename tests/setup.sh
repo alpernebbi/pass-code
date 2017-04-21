@@ -27,7 +27,7 @@ unset EDITOR
 # We must be called from tests/
 TEST_HOME="$(pwd)"
 
-. ./sharness.sh
+. ./sharness.sh --verbose
 
 export PASSWORD_STORE_DIR="$SHARNESS_TRASH_DIRECTORY/test-store/"
 rm -rf "$PASSWORD_STORE_DIR"
