@@ -157,6 +157,20 @@ code_encode_args() {
 	done
 }
 
+# Strip options (i.e. anything that starts with a dash)
+#    code_positional_args "$@"
+#    set -- "${positional_args[@]}"
+declare -a positional_args
+code_positional_args() {
+	positional_args=()
+
+	for arg in "$@"; do
+		if [[ "${arg#-}" = "$arg" ]]; then
+			positional_args+=("$arg")
+		fi
+	done
+}
+
 cmd_code_version() {
 	cat <<- EOF
 	$PROGRAM-code version 0.1.0
