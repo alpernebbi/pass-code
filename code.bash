@@ -215,6 +215,22 @@ cmd_code_insert() {
 	code_encrypt
 }
 
+cmd_code_edit() {
+	code_decrypt
+
+	# One positional arg, maybe not in codec
+	code_positional_args "$@"
+	local dec="${positional_args[0]}"
+	if [[ -z "${codec[Dx$dec]+x}" ]]; then
+		code_add_random "$dec"
+	fi
+
+	code_encode_args "$@"
+	set -- "${encoded_args[@]}"
+	cmd_edit "$@"
+	code_encrypt
+}
+
 cmd_code_generate() {
 	code_decrypt
 
@@ -244,6 +260,7 @@ case "$1" in
 	list|ls)              shift; cmd_code_ls "$@" ;;
 	show)                 shift; cmd_code_show "$@" ;;
 	insert|add)           shift; cmd_code_insert "$@" ;;
+	edit)                 shift; cmd_code_edit "$@" ;;
 	generate)	      shift; cmd_code_generate "$@" ;;
 	test)                 shift; cmd_code_test "$@" ;;
 	*) exit 1;;
