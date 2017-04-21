@@ -50,7 +50,7 @@ code_add_random() {
 	local dec="$1"
 	local enc=""
 
-	while [[ -z "${codec[Dx$dec]+x}" ]]; do
+	until code_is_file "$dec"; do
 		read -r -n 16 enc \
 			< <(LC_ALL=C tr -dc "0-9a-z" < /dev/urandom)
 
@@ -74,6 +74,11 @@ code_list_files() {
 		| tail -n +2 \
 		| cut -d ' ' -f 2 \
 		| code_decode
+}
+
+# Check if file exists in codec
+code_is_file() {
+	[[ -n "$1" && -n "${codec[Dx$1]+x}" ]]
 }
 
 # Check if codec is in valid format.
@@ -209,9 +214,7 @@ cmd_code_insert() {
 	# One positional arg, possibly not in codec
 	code_positional_args "$@"
 	local dec="${positional_args[0]}"
-	if [[ -z "${codec[Dx$dec]+x}" ]]; then
-		code_add_random "$dec"
-	fi
+	code_is_file "$dec" || code_add_random "$dec"
 
 	code_encode_args "$@"
 	set -- "${encoded_args[@]}"
@@ -225,9 +228,7 @@ cmd_code_edit() {
 	# One positional arg, maybe not in codec
 	code_positional_args "$@"
 	local dec="${positional_args[0]}"
-	if [[ -z "${codec[Dx$dec]+x}" ]]; then
-		code_add_random "$dec"
-	fi
+	code_is_file "$dec" || code_add_random "$dec"
 
 	code_encode_args "$@"
 	set -- "${encoded_args[@]}"
@@ -242,9 +243,7 @@ cmd_code_generate() {
 	# Second is a number or empty, irrelevant in both cases
 	code_positional_args "$@"
 	local dec="${positional_args[0]}"
-	if [[ -z "${codec[Dx$dec]+x}" ]]; then
-		code_add_random "$dec"
-	fi
+	code_is_file "$dec" || code_add_random "$dec"
 
 	code_encode_args "$@"
 	set -- "${encoded_args[@]}"
