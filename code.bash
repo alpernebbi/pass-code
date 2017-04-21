@@ -198,9 +198,27 @@ cmd_code_show() {
 	cmd_show "$@"
 }
 
+cmd_code_insert() {
+	code_decrypt
+
+	# These positional args might not be in the codec.
+	code_positional_args "$@"
+	for dec in "${positional_args[@]}"; do
+		if [[ -z "${codec[Dx$dec]+x}" ]]; then
+			code_add_random "$dec"
+		fi
+	done
+
+	code_encode_args "$@"
+	set -- "${encoded_args[@]}"
+	cmd_insert "$@"
+	code_encrypt
+}
+
 case "$1" in
 	version|--version|-v) shift; cmd_code_version "$@" ;;
 	list|ls)              shift; cmd_code_ls "$@" ;;
 	show)                 shift; cmd_code_show "$@" ;;
+	insert|add)           shift; cmd_code_insert "$@" ;;
 	*) exit 1;;
 esac
