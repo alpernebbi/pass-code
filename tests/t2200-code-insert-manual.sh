@@ -8,7 +8,7 @@ test_expect_success 'setup password store' '
 	"$PASS" init $KEY1
 '
 
-test_expect_failure 'pass-code insert --echo succeeds' '
+test_expect_success 'pass-code insert --echo succeeds' '
 	"$PASS" code insert --echo a/a/a/a <<< "a/a/a/a" &&
 	"$PASS" code insert --echo a/a/b   <<< "a/a/b"   &&
 	"$PASS" code insert --echo a/b/a   <<< "a/b/a"   &&
@@ -23,7 +23,7 @@ test_expect_failure 'pass-code insert --echo succeeds' '
 
 remove_colors() { sed -e "s/\x1B\[[0-9;]*m//g"; }
 
-test_expect_failure 'pass-code insert folder hierarchy is correct' '
+test_expect_success 'pass-code insert folder hierarchy is correct' '
 	diff -U99 - \
 		<("$PASS" code ls | remove_colors) \
 		<<- "_EOF_"
@@ -49,7 +49,7 @@ test_expect_failure 'pass-code insert folder hierarchy is correct' '
 	_EOF_
 '
 
-test_expect_failure 'pass-code inserted passwords are correct' '
+test_expect_success 'pass-code inserted passwords are correct' '
 	diff -U99 - <("$PASS" code show a/a/a/a) <<< "a/a/a/a" &&
 	diff -U99 - <("$PASS" code show a/a/b)   <<< "a/a/b"   &&
 	diff -U99 - <("$PASS" code show a/b/a)   <<< "a/b/a"   &&
@@ -62,7 +62,7 @@ test_expect_failure 'pass-code inserted passwords are correct' '
 	diff -U99 - <("$PASS" code show g)       <<< "g"
 '
 
-test_expect_failure 'pass-code insert --multiline succeeds' '
+test_expect_success 'pass-code insert --multiline succeeds' '
 	"$PASS" code insert --multiline mul/ti/line <<- _EOF_
 	First line.
 	Second line.
@@ -72,7 +72,7 @@ test_expect_failure 'pass-code insert --multiline succeeds' '
 	_EOF_
 '
 
-test_expect_failure 'pass-code insert --multiline value is correct' '
+test_expect_success 'pass-code insert --multiline value is correct' '
 	diff -U99 - <("$PASS" code show mul/ti/line) <<- _EOF_
 	First line.
 	Second line.
