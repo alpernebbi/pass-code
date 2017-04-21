@@ -68,6 +68,14 @@ code_add_random() {
 	done
 }
 
+# Lists decoded files, assuming encoded hierarchy is flat
+code_list_files() {
+	cmd_show \
+		| tail -n +2 \
+		| cut -d ' ' -f 2 \
+		| code_decode
+}
+
 # Check if codec is in valid format.
 # Only [ExENC]=DEC and [DxDEC]=ENC are allowed.
 # One-to-one mapping, so [Dx[ExENC]]=ENC and [Ex[DxDEC]]=DEC.
@@ -178,16 +186,12 @@ cmd_code_version() {
 	EOF
 }
 
-# Assumes the encoded hierarchy is flat
 cmd_code_ls() {
 	local subfolder="$1"
 	check_sneaky_paths "$subfolder"
 
 	code_decrypt
-	cmd_show \
-		| tail -n +2 \
-		| cut -d ' ' -f 2 \
-		| code_decode \
+	code_list_files \
 		| code_filter_subfolder "$subfolder" \
 		| code_format_as_tree "$subfolder"
 }
