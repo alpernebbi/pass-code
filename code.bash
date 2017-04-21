@@ -104,7 +104,7 @@ code_validate() {
 # Print ENC:DEC pairs
 code_as_colons() {
 	for key in "${!codec[@]}"; do
-		if [[ "${key#Ex}" != "$key" ]]; then
+		if [[ -n "${key#Ex}" && "${key#Ex}" != "$key" ]]; then
 			echo "${key#Ex}:${codec[$key]}"
 		fi
 	done | sort -t ':' -k 2
