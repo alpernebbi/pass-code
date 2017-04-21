@@ -146,12 +146,14 @@ code_filter_subfolder() {
 }
 
 # Encodes all encodable arguments, but leaves others intact.
-# Can be used like: set -- $(code_encode_args "$@")
+#     code_encode_args "$@"
+#     set -- "${encoded_args[@]}"
+declare -a encoded_args
 code_encode_args() {
-	local args=("$@")
+	encoded_args=()
 
-	for arg in "${args[@]}"; do
-		echo "${codec[Dx$arg]-$arg}"
+	for arg in "$@"; do
+		encoded_args+=("${codec[Dx$arg]-$arg}")
 	done
 }
 
@@ -177,7 +179,9 @@ cmd_code_ls() {
 
 cmd_code_show() {
 	code_decrypt
-	cmd_show $(code_encode_args "$@")
+	code_encode_args "$@"
+	set -- "${encoded_args[@]}"
+	cmd_show "$@"
 }
 
 case "$1" in
