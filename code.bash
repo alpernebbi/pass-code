@@ -102,7 +102,8 @@ code_encrypt() {
 
 	code_validate
 	code_as_colons \
-		| cmd_insert ".passcode" --multiline --force
+		| cmd_insert ".passcode" --multiline --force \
+		>/dev/null
 }
 
 # I'm going to cheat and create an equivalent folder hierarchy,
