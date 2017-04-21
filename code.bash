@@ -265,7 +265,7 @@ case "$1" in
 	show)                 shift; cmd_code_show "$@" ;;
 	insert|add)           shift; cmd_code_insert "$@" ;;
 	edit)                 shift; cmd_code_edit "$@" ;;
-	generate)	      shift; cmd_code_generate "$@" ;;
+	generate)             shift; cmd_code_generate "$@" ;;
 	test)                 shift; cmd_code_test "$@" ;;
 	*) exit 1;;
 esac
