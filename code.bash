@@ -76,7 +76,11 @@ code_list_files() {
 		| code_decode
 }
 
-# Check if file exists in codec
+# Check if file/directory exists in codec
+code_is_directory() {
+	[[ -n "$1" ]] && (code_list_files | grep -q "^${1%%/}/")
+}
+
 code_is_file() {
 	[[ -n "$1" && -n "${codec[Dx$1]+x}" ]]
 }
