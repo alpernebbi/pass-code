@@ -215,6 +215,24 @@ cmd_code_insert() {
 	code_encrypt
 }
 
+cmd_code_generate() {
+	code_decrypt
+
+	# One (maybe two) positional args, first possibly not in codec
+	# Second is a number or empty, irrelevant in both cases
+	code_positional_args "$@"
+	local dec="${positional_args[0]}"
+	if [[ -z "${codec[Dx$dec]+x}" ]]; then
+		code_add_random "$dec"
+	fi
+
+	code_encode_args "$@"
+	set -- "${encoded_args[@]}"
+	cmd_generate "$@"
+	code_encrypt
+}
+
+
 # For testing internal functions.
 # Exit with non-zero status to pause sharness and inspect manually.
 cmd_code_test() {
@@ -226,6 +244,7 @@ case "$1" in
 	list|ls)              shift; cmd_code_ls "$@" ;;
 	show)                 shift; cmd_code_show "$@" ;;
 	insert|add)           shift; cmd_code_insert "$@" ;;
+	generate)	      shift; cmd_code_generate "$@" ;;
 	test)                 shift; cmd_code_test "$@" ;;
 	*) exit 1;;
 esac
