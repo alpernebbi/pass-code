@@ -215,10 +215,17 @@ cmd_code_insert() {
 	code_encrypt
 }
 
+# For testing internal functions.
+# Exit with non-zero status to pause sharness and inspect manually.
+cmd_code_test() {
+	exit 0
+}
+
 case "$1" in
 	version|--version|-v) shift; cmd_code_version "$@" ;;
 	list|ls)              shift; cmd_code_ls "$@" ;;
 	show)                 shift; cmd_code_show "$@" ;;
 	insert|add)           shift; cmd_code_insert "$@" ;;
+	test)                 shift; cmd_code_test "$@" ;;
 	*) exit 1;;
 esac
