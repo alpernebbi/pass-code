@@ -202,13 +202,12 @@ cmd_code_show() {
 cmd_code_insert() {
 	code_decrypt
 
-	# These positional args might not be in the codec.
+	# One positional arg, possibly not in codec
 	code_positional_args "$@"
-	for dec in "${positional_args[@]}"; do
-		if [[ -z "${codec[Dx$dec]+x}" ]]; then
-			code_add_random "$dec"
-		fi
-	done
+	local dec="${positional_args[0]}"
+	if [[ -z "${codec[Dx$dec]+x}" ]]; then
+		code_add_random "$dec"
+	fi
 
 	code_encode_args "$@"
 	set -- "${encoded_args[@]}"
