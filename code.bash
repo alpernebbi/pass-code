@@ -255,6 +255,141 @@ cmd_code_generate() {
 	code_encrypt
 }
 
+cmd_code_copy_move() {
+	code_decrypt
+
+	# Prepended an action in the case statement, take that out
+	local action="$1"
+	shift
+
+	# Check --force/-f since we have to do conflict handling
+	local force=false
+	for arg in "$@"; do
+		if [[ "$arg" = "--force" || "$arg" = "-f" ]]; then
+			force=true
+			break
+		fi
+	done
+
+	# Two positional args, first must be in codec; second may be.
+	# Both might exist _both_ as a folder and as a file, since
+	# pass uses .gpg suffixes. (i.e. x.gpg and x/ are both x)
+	code_positional_args "$@"
+	local from="${positional_args[0]}" from_is_dir=false
+	local to="${positional_args[1]}" to_is_dir=false
+
+	#  codec   |   a    |   a/   | d? a/ | f a | is_dir |
+	# ---------|--------|--------|-------------|--------|
+	# {a, a/*} | file   | folder |   y   |  y  |   a/   |
+	# {a/*}    | folder | folder |   y   |  n  | a   a/ |
+	# {a}      | file   | error  |   n   |  y  |        |
+	# {}       | error  | error  |   n   |  n  |        |
+	if code_is_directory "$from" && code_is_file "${from%/}"; then
+		[[ "$from" == */ ]] && from_is_dir=true
+	elif code_is_directory "$from"; then
+		from_is_dir=true
+	elif [[ "$from" == */ ]] || ! code_is_file "$from"; then
+		die "Error: \`$from\` not in pass-code store."
+	fi
+	from="${from%/}"
+
+	#  codec   |   b    |   b/    | d? b/ | f b | is_dir |
+	# ---------|--------|---------|-------------|--------|
+	# {b, b/*} | file   | folder  |   y   |  y  |   b/   |
+	# {b/*}    | folder | folder  |   y   |  n  | b   b/ |
+	# {b}      | file   | folder+ |   n   |  y  |   b/   |
+	# {}       | file+  | folder+ |   n   |  n  |   b/   |
+	if [[ "$to" == */ ]]; then
+		to_is_dir=true
+	elif code_is_directory "$to" && ! code_is_file "${to%/}"; then
+		to_is_dir=true
+	fi
+	to="${to%/}"
+
+	# Decide on what exactly needs to be done.
+	local from_name to_dir to_name
+	local -a from_files
+	local -A pass_thru
+
+	from_name="${from##*/}"
+
+	# Array of things to copy. The false case is a single "$from"
+	# file, which I copy to a single "$to" later on using another
+	# if "$from_is_dir" branch.
+	if [[ "$from_is_dir" = true ]]; then
+		from_files=("$(code_list_files \
+			| code_filter_subfolder "$from")")
+	else
+		from_files=("$from")
+	fi
+
+	# If we're copying into a directory, go into it
+	if [[ "$to_is_dir" = true ]]; then
+		to_dir="$to"
+		to_name="$from_name"
+		to="$to_dir/$to_name"
+	else
+		to_dir="${to%/*}"
+		to_name="${to##*/}"
+	fi
+
+	# ``mv a x`` on {a/a, a/b, a/c, x/a/b} asks if we want
+	# to overwrite x/a and doesn't move anything if we abort.
+	# But it still doesn't copy anything if we --force, since mv
+	# complains x/a isn't empty. However, ``cp a x`` in the same
+	# situation copies all it can, asks whenever it needs to
+	# overwrite and overwrites if you say so (or give --force). If
+	# you reject the overwrite, it continues copying other files.
+
+	# Hence, don't merge folders if we're on mv.
+	[[ "$action" = "move" && "$from_is_dir" = true ]] && \
+		code_is_directory "$to" && \
+		die "Cannot move $from_name to $to: Directory not empty"
+
+	local fenc tenc fdec tdec
+	for fdec in "${from_files[@]}"; do
+		fenc="${codec[Dx$fdec]}"
+
+		# if "$from_is_dir" is true,
+		# from="old/dir", fdec="old/dir/*"
+		# tdec="new/dir/*" or tdec="new/old/dir/*"
+		# depending on "$to_is_dir" manipulation above
+		#
+		# if "$from_is_dir" is false,
+		# from="old/file", fdec="old/file", to="new/file"
+		if [[ "$from_is_dir" = true ]]; then
+			tdec="$to/${fdec#$from/}"
+		else
+			tdec="$to"
+		fi
+
+		# Ask on conflicts if not force
+		if code_is_file "$tdec" && [[ "$force" != true ]]; then
+			yesno "overwrite $tdec?" || continue
+		fi
+
+		# No need to change mapping if one exists
+		# Just overwrite the encoded file
+		code_is_file "$tdec" || code_add_random "$tdec"
+		pass_thru["Fx$fenc"]="${codec[Dx$tdec]}"
+
+		# Need to remove from-file mapping if we're moving
+		if [[ "$action" = "move" ]]; then
+			code_remove "$fdec" "$fenc"
+		fi
+	done
+
+	# Since we haven't been interrupted out of running yet,
+	# we can commit to our changes. Force everything since we
+	# filtered out unwanted changes earlier.
+	for fxfenc in "${!pass_thru[@]}"; do
+		fenc="${fxfenc#Fx}"
+		tenc="${pass_thru[Fx$fenc]}"
+		cmd_copy_move "$action" --force "$fenc" "$tenc"
+	done
+
+	code_encrypt
+}
 
 # For testing internal functions.
 # Exit with non-zero status to pause sharness and inspect manually.
@@ -269,6 +404,8 @@ case "$1" in
 	insert|add)           shift; cmd_code_insert "$@" ;;
 	edit)                 shift; cmd_code_edit "$@" ;;
 	generate)             shift; cmd_code_generate "$@" ;;
+	rename|mv)            shift; cmd_code_copy_move "move" "$@" ;;
+	copy|cp)              shift; cmd_code_copy_move "copy" "$@" ;;
 	test)                 shift; cmd_code_test "$@" ;;
 	*) exit 1;;
 esac
