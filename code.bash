@@ -78,7 +78,7 @@ code_list_files() {
 
 # Check if file/directory exists in codec
 code_is_directory() {
-	[[ -n "$1" ]] && (code_list_files | grep -q "^${1%%/}/")
+	[[ -n "$1" ]] && (code_list_files | grep "^${1%/}/" > /dev/null)
 }
 
 code_is_file() {
