@@ -317,8 +317,8 @@ cmd_code_copy_move() {
 	# file, which I copy to a single "$to" later on using another
 	# if "$from_is_dir" branch.
 	if [[ "$from_is_dir" = true ]]; then
-		from_files=("$(code_list_files \
-			| code_filter_subfolder "$from")")
+		from_files=($(code_list_files \
+			| code_filter_subfolder "$from"))
 	else
 		from_files=("$from")
 	fi
