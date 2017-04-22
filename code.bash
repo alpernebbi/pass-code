@@ -365,7 +365,7 @@ cmd_code_copy_move() {
 
 		# Ask on conflicts if not force
 		if code_is_file "$tdec" && [[ "$force" != true ]]; then
-			yesno "overwrite $tdec?" || continue
+			(yesno "overwrite $tdec?") || continue
 		fi
 
 		# No need to change mapping if one exists
