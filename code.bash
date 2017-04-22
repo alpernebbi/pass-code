@@ -259,7 +259,7 @@ cmd_code_generate() {
 	code_encrypt
 }
 
-cmd_code_copy_move() {
+cmd_code_cpmvrm() {
 	code_decrypt
 
 	# Prepended an action in the case statement, take that out
@@ -444,9 +444,9 @@ case "$1" in
 	insert|add)           shift; cmd_code_insert "$@" ;;
 	edit)                 shift; cmd_code_edit "$@" ;;
 	generate)             shift; cmd_code_generate "$@" ;;
-	delete|rm|remove)     shift; cmd_code_copy_move "delete" "$@" ;;
-	rename|mv)            shift; cmd_code_copy_move "move" "$@" ;;
-	copy|cp)              shift; cmd_code_copy_move "copy" "$@" ;;
+	delete|rm|remove)     shift; cmd_code_cpmvrm "delete" "$@" ;;
+	rename|mv)            shift; cmd_code_cpmvrm "move" "$@" ;;
+	copy|cp)              shift; cmd_code_cpmvrm "copy" "$@" ;;
 	test)                 shift; cmd_code_test "$@" ;;
 	*) exit 1;;
 esac
