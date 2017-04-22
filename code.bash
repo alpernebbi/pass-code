@@ -267,15 +267,17 @@ cmd_code_copy_move() {
 	shift
 
 	# Check --force/-f since we have to do conflict handling
-	local force=false
+	local force=false recursive=false
 	for arg in "$@"; do
-		if [[ "$arg" = "--force" || "$arg" = "-f" ]]; then
+		if [[ "$arg" = "--recursive" || "$arg" = "-r" ]]; then
+			recursive=true
+		elif [[ "$arg" = "--force" || "$arg" = "-f" ]]; then
 			force=true
-			break
 		fi
 	done
 
 	# Two positional args, first must be in codec; second may be.
+	# If we're removing, second arg should not exist at all.
 	# Both might exist _both_ as a folder and as a file, since
 	# pass uses .gpg suffixes. (i.e. x.gpg and x/ are both x)
 	code_positional_args "$@"
@@ -303,7 +305,9 @@ cmd_code_copy_move() {
 	# {b/*}    | folder | folder  |   y   |  n  | b   b/ |
 	# {b}      | file   | folder+ |   n   |  y  |   b/   |
 	# {}       | file+  | folder+ |   n   |  n  |   b/   |
-	if [[ "$to" == */ ]]; then
+	if [[ "$action" = "delete" ]]; then
+		[[ -n "$to" ]] && die "cp takes one positional arg"
+	elif [[ "$to" == */ ]]; then
 		to_is_dir=true
 	elif code_is_directory "$to" && ! code_is_file "${to%/}"; then
 		to_is_dir=true
@@ -350,6 +354,17 @@ cmd_code_copy_move() {
 		code_is_directory "$to" && \
 		die "Cannot move $from_name to $to: Directory not empty"
 
+	# Need to set recursive to delete folders
+	[[ "$action" = "delete" && "$from_is_dir" = true ]] && \
+		[[ "$recursive" = false ]] && \
+		die "Cannot remove $from: Directory not empty"
+
+	# ``pass rm --recursive x`` on {x/*} only asks confirmation
+	# for x, so ask it and set force if approved, die otherwise.
+	[[ "$action" = "delete" && "$recursive" = true ]] && \
+		[[ "$force" = false ]] && yesno "remove $from?" && \
+		force=true
+
 	local fenc tenc fdec tdec
 	for fdec in "${from_files[@]}"; do
 		fenc="${codec[Dx$fdec]}"
@@ -361,6 +376,8 @@ cmd_code_copy_move() {
 		#
 		# if "$from_is_dir" is false,
 		# from="old/file", fdec="old/file", to="new/file"
+		#
+		# if deleting, to="", so tdec="", this is fine
 		if [[ "$from_is_dir" = true ]]; then
 			tdec="$to/${fdec#$from/}"
 		else
@@ -372,13 +389,28 @@ cmd_code_copy_move() {
 			(yesno "overwrite $tdec?") || continue
 		fi
 
+		# Remove asks to delete files
+		# If we're deleting a folder, force is already true
+		if [[ "$action" = "delete" && "$force" != true ]]; then
+			(yesno "remove $fdec?") || continue
+		fi
+
 		# No need to change mapping if one exists
 		# Just overwrite the encoded file
-		code_is_file "$tdec" || code_add_random "$tdec"
-		pass_thru["Fx$fenc"]="${codec[Dx$tdec]}"
+		# If deleting, need to add "Fx$fenc" to the associative
+		# array somehow, so map it to itself
+		if [[ "$action" = "delete" ]]; then
+			pass_thru["Fx$fenc"]="$fenc"
+		else
+			code_is_file "$tdec" || code_add_random "$tdec"
+			pass_thru["Fx$fenc"]="${codec[Dx$tdec]}"
+		fi
 
 		# Need to remove from-file mapping if we're moving
-		if [[ "$action" = "move" ]]; then
+		# or deleting
+		if [[ "$action" = "delete" ]]; then
+			code_remove "$fdec" "$fenc"
+		elif [[ "$action" = "move" ]]; then
 			code_remove "$fdec" "$fenc"
 		fi
 	done
@@ -389,7 +421,11 @@ cmd_code_copy_move() {
 	for fxfenc in "${!pass_thru[@]}"; do
 		fenc="${fxfenc#Fx}"
 		tenc="${pass_thru[Fx$fenc]}"
-		cmd_copy_move "$action" --force "$fenc" "$tenc"
+		if [[ "$action" = "move" || "$action" = "copy" ]]; then
+			cmd_copy_move "$action" --force "$fenc" "$tenc"
+		elif [[ "$action" = "delete" ]]; then
+			cmd_delete --force "$fenc"
+		fi
 	done
 
 	code_encrypt
@@ -408,6 +444,7 @@ case "$1" in
 	insert|add)           shift; cmd_code_insert "$@" ;;
 	edit)                 shift; cmd_code_edit "$@" ;;
 	generate)             shift; cmd_code_generate "$@" ;;
+	delete|rm|remove)     shift; cmd_code_copy_move "delete" "$@" ;;
 	rename|mv)            shift; cmd_code_copy_move "move" "$@" ;;
 	copy|cp)              shift; cmd_code_copy_move "copy" "$@" ;;
 	test)                 shift; cmd_code_test "$@" ;;
