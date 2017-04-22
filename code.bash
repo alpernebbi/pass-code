@@ -50,6 +50,10 @@ code_add_random() {
 	local dec="$1"
 	local enc=""
 
+	if [[ -z "$dec" ]]; then
+		return 1
+	fi
+
 	until code_is_file "$dec"; do
 		read -r -n 16 enc \
 			< <(LC_ALL=C tr -dc "0-9a-z" < /dev/urandom)
