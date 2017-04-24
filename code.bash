@@ -77,7 +77,8 @@ code_list_files() {
 	cmd_show \
 		| tail -n +2 \
 		| cut -d ' ' -f 2 \
-		| code_decode
+		| code_decode \
+		| sort
 }
 
 # Check if file/directory exists in codec
@@ -127,43 +128,127 @@ code_encrypt() {
 		>/dev/null
 }
 
-# I'm going to cheat and create an equivalent folder hierarchy,
-# and call the actual "tree" on it.
-code_format_as_tree() {
-	local subfolder="$1"
+# Enable colors if we have LS_COLORS
+declare -A colors
+for pair in $(tr ':' '\n' <<< "$LS_COLORS"); do
+	colors["${pair%%=*}"]="\x1B[${pair##*=}m"
+done
 
-	# Sets $SECURE_TMPDIR. Don't warn since all files we create
-	# are empty anyway.
-	tmpdir nowarn
-	local fakestore
-	fakestore="$(mktemp -d "$SECURE_TMPDIR/fakestore.XXXXXXX")"
-
-	# Input filenames are relative to password store
-	while read -r relpath; do
-		check_sneaky_paths "$relpath"
-		mkdir -p "$(dirname "$fakestore/$relpath")"
-		touch "$fakestore/$relpath"
-	done
-
-	# "Password Store" or name of the subfolder as the first line
-	if [[ -z "$subfolder" ]]; then
-		echo "Password Store"
+code_colorize_dir() {
+	if [[ "$1" == */ ]]; then
+		echo -e -n "${colors["di"]}${1%/}${colors["rs"]}"
 	else
-		echo "$subfolder"
+		echo -n "$1"
+	fi
+}
+
+code_format_as_tree() {
+	# Thing to print before this line, used in recursion
+	local prefix="$1"
+
+	# Print box-drawing chars if $LANG supports it
+	local brnc pipe crnr blnk
+	if [[ "$LANG" == *utf8* || "$LANG" == *UTF-8* ]]; then
+		brnc='├──'
+		pipe='│  '
+		crnr='└──'
+		blnk='   '
+	else
+		brnc='|--'
+		pipe='|  '
+		crnr='`--'
+		blnk='   '
 	fi
 
-	tree -C -l --noreport "$fakestore/$subfolder" \
-		| tail -n +2
+	# Sorted list of files, and first-level items
+	local -a all_files fs
+	all_files=($(cat))
+
+	# Figure out first-level items, with dirs/ and files
+	for f in "${all_files[@]}"; do
+		if [[ "${#fs}" -eq 0 || "${fs[-1]}" != "${f%%/*}/" ]]
+		then
+			if [[ -z "${f##*/*}" ]]; then
+				fs+=("${f%%/*}/")
+			else
+				fs+=("${f%%/*}")
+			fi
+		fi
+	done
+
+
+	# Print the first-level items as if only they exist, but print
+	# the sub-trees via recursion (with the appropriate prefixes)
+	# in-between them.
+	#
+	# Recursion level 1
+	# -----------------
+	#   |-- a
+	# {"|   " tree a}
+	#   |-- b
+	# {"|   " tree b}
+	#   `-- c
+	# {"    " tree d}
+	#
+	# Recursion level 2
+	# -----------------
+	#   |-- a
+	#   |   |-- a
+	# {"|   |   " tree a/a}
+	#   |   `-- b
+	#   |-- b
+	#   |   `-- a
+	# {"|       " tree b/a}
+	#   `-- c
+	#       |-- a
+	# {"    |   " tree c/a}
+	#       `-- b
+	# {"        " tree c/b}
+
+	local pre
+	for x in "${!fs[@]}"; do
+		local f="${fs[$x]}"
+
+		# Only the trees after the last element of the current
+		# level get the "    " prefix, others get the "|   "
+		# prefix. Also, the last elements have "`-- " instead
+		# of "|-- "
+		if [[ "$f" != "${fs[-1]}" ]]; then
+			echo "$prefix$brnc $(code_colorize_dir "$f")"
+			pre="$pipe"
+		else
+			echo "$prefix$crnr $(code_colorize_dir "$f")"
+			pre="$blnk"
+		fi
+
+		# If this is a folder, recurse down a level
+		if [[ "$f" == */ ]]; then
+			for y in "${all_files[@]}"; do
+				echo "$y"
+			done | code_filter_subfolder "$f" "yes" \
+				| code_format_as_tree "$prefix$pre "
+		fi
+	done
 }
 
 # Take newline seperated list of files, choose those in path/to/sub/
 code_filter_subfolder() {
-	local subfolder="$1"
-	if [[ -z "$subfolder" ]]; then
+	# Accept "path/to/sub/" and "path/to/sub" as inputs
+	local sub="${1%/}"
+	local remove="$2"
+
+	if [[ -z "$sub" ]]; then
 		cat
 	else
-		# Accept "path/to/sub/" and "path/to/sub" as inputs
-		grep "^${subfolder%%/}/"
+		while read -r line; do
+			if [[ "${line#$sub/}" != "${line}" ]]; then
+				if [[ -n "$remove" ]]; then
+					echo "${line#$sub/}"
+				else
+					echo "${line}"
+				fi
+			fi
+		done
 	fi
 }
 
@@ -200,13 +285,21 @@ cmd_code_version() {
 }
 
 cmd_code_ls() {
-	local subfolder="$1"
-	check_sneaky_paths "$subfolder"
-
+	local sub="$1"
+	check_sneaky_paths "$sub"
 	code_decrypt
+
+	if [[ -z "$sub" ]]; then
+		echo "Password Store"
+	elif code_is_directory "$sub"; then
+		echo "$sub"
+	else
+		return
+	fi
+
 	code_list_files \
-		| code_filter_subfolder "$subfolder" \
-		| code_format_as_tree "$subfolder"
+		| code_filter_subfolder "$sub" "yes" \
+		| code_format_as_tree
 }
 
 cmd_code_show() {
