@@ -9,14 +9,14 @@ test_expect_success 'Test "rm" command' '
 	"$PASS" init $KEY1 &&
 	"$PASS" generate cred1 43 &&
 	"$PASS" rm cred1 &&
-	[[ ! -e $PASSWORD_STORE_DIR/cred1.gpg ]]
+	test_must_fail "$PASS" show cred1
 '
 
 test_expect_success 'Test "rm" command with spaces' '
 	"$PASS" generate "hello i have spaces" 43 &&
-	[[ -e $PASSWORD_STORE_DIR/"hello i have spaces".gpg ]] &&
+	"$PASS" show "hello i have spaces" &&
 	"$PASS" rm "hello i have spaces" &&
-	[[ ! -e $PASSWORD_STORE_DIR/"hello i have spaces".gpg ]]
+	test_must_fail "$PASS" show "hello i have spaces"
 '
 
 test_expect_success 'Test "rm" of non-existent password' '
