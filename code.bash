@@ -25,7 +25,7 @@ code_decrypt() {
 	while read -r pair; do
 		codec["Dx${pair##*:}"]="${pair%%:*}"
 		codec["Ex${pair%%:*}"]="${pair##*:}"
-	done <<< "$(cmd_show .passcode)"
+	done <<< "$(cmd_show .passcode 2>/dev/null)"
 }
 
 # Will not print anything if code_decrypt not run or key not in mapping
