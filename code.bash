@@ -252,6 +252,18 @@ code_filter_subfolder() {
 	fi
 }
 
+code_filter() {
+	while read -r line; do
+		for arg in "$@"; do
+			if [[ -z "${line##*$arg*}" ]]; then
+				echo "$line"
+				break
+			fi
+		done
+	done
+
+}
+
 # Encodes all encodable arguments, but leaves others intact.
 #     code_encode_args "$@"
 #     set -- "${encoded_args[@]}"
@@ -307,6 +319,17 @@ cmd_code_show() {
 	code_encode_args "$@"
 	set -- "${encoded_args[@]}"
 	cmd_show "$@"
+}
+
+cmd_code_find() {
+	code_decrypt
+
+	# First line, IFS doesn't leak out of the subshell
+	(IFS=','; echo "Search Terms: $*")
+
+	code_list_files \
+		| code_filter "$@" \
+		| code_format_as_tree
 }
 
 cmd_code_insert() {
@@ -534,6 +557,7 @@ case "$1" in
 	version|--version|-v) shift; cmd_code_version "$@" ;;
 	list|ls)              shift; cmd_code_ls "$@" ;;
 	show)                 shift; cmd_code_show "$@" ;;
+	find|search)          shift; cmd_code_find "$@" ;;
 	insert|add)           shift; cmd_code_insert "$@" ;;
 	edit)                 shift; cmd_code_edit "$@" ;;
 	generate)             shift; cmd_code_generate "$@" ;;
