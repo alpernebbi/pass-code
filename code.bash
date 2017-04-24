@@ -264,6 +264,28 @@ code_filter() {
 
 }
 
+code_decode_grep_output() {
+	local enc dec x1b
+
+	# Escape code
+	x1b="$(echo -en '\x1B')"
+
+	while read -r line; do
+		enc="${line##*$PREFIX}"
+
+		# Delete color control codes (e.g. "\x1B[0m")
+		enc="${enc#${x1b}*m}"
+		enc="${enc%${x1b}*}"
+
+		dec="${codec["Ex$enc"]}"
+		if [[ -n "$dec" ]]; then
+			echo "${line//$enc/$enc ($dec)}"
+		else
+			echo "$line"
+		fi
+	done
+}
+
 # Encodes all encodable arguments, but leaves others intact.
 #     code_encode_args "$@"
 #     set -- "${encoded_args[@]}"
@@ -330,6 +352,15 @@ cmd_code_find() {
 	code_list_files \
 		| code_filter "$@" \
 		| code_format_as_tree
+}
+
+cmd_code_grep() {
+	code_decrypt
+
+	rs="$(echo -e "\x1B[0m")"
+
+	cmd_grep "$@" \
+		| code_decode_grep_output
 }
 
 cmd_code_insert() {
@@ -558,6 +589,7 @@ case "$1" in
 	list|ls)              shift; cmd_code_ls "$@" ;;
 	show)                 shift; cmd_code_show "$@" ;;
 	find|search)          shift; cmd_code_find "$@" ;;
+	grep)                 shift; cmd_code_grep "$@" ;;
 	insert|add)           shift; cmd_code_insert "$@" ;;
 	edit)                 shift; cmd_code_edit "$@" ;;
 	generate)             shift; cmd_code_generate "$@" ;;
