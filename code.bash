@@ -585,6 +585,7 @@ cmd_code_test() {
 }
 
 case "$1" in
+	init)                 shift; cmd_init "$@" ;;
 	version|--version)    shift; cmd_code_version "$@" ;;
 	list|ls)              shift; cmd_code_ls "$@" ;;
 	show)                 shift; cmd_code_show "$@" ;;
@@ -596,6 +597,7 @@ case "$1" in
 	delete|rm|remove)     shift; cmd_code_cpmvrm "delete" "$@" ;;
 	rename|mv)            shift; cmd_code_cpmvrm "move" "$@" ;;
 	copy|cp)              shift; cmd_code_cpmvrm "copy" "$@" ;;
+	git)                  shift; cmd_git "$@" ;;
 	test)                 shift; cmd_code_test "$@" ;;
 	*) exit 1;;
 esac
