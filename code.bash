@@ -585,7 +585,7 @@ cmd_code_test() {
 }
 
 case "$1" in
-	version|--version|-v) shift; cmd_code_version "$@" ;;
+	version|--version)    shift; cmd_code_version "$@" ;;
 	list|ls)              shift; cmd_code_ls "$@" ;;
 	show)                 shift; cmd_code_show "$@" ;;
 	find|search)          shift; cmd_code_find "$@" ;;
