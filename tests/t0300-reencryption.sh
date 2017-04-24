@@ -3,6 +3,7 @@
 test_description='Reencryption consistency'
 cd "$(dirname "$0")"
 . ./setup.sh
+PASS="$SHARNESS_TEST_DIRECTORY/pass-code.sh"
 
 INITIAL_PASSWORD="will this password live? a big question indeed..."
 

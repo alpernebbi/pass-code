@@ -3,6 +3,7 @@
 test_description='Find check'
 cd "$(dirname "$0")"
 . ./setup.sh
+PASS="$SHARNESS_TEST_DIRECTORY/pass-code.sh"
 
 test_expect_success 'Make sure find resolves correct files' '
 	"$PASS" init $KEY1 &&

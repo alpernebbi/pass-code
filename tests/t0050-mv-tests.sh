@@ -3,6 +3,7 @@
 test_description='Test mv command'
 cd "$(dirname "$0")"
 . ./setup.sh
+PASS="$SHARNESS_TEST_DIRECTORY/pass-code.sh"
 
 INITIAL_PASSWORD="bla bla bla will we make it!!"
 

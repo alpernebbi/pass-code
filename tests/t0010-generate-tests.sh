@@ -3,6 +3,7 @@
 test_description='Test generate'
 cd "$(dirname "$0")"
 . ./setup.sh
+PASS="$SHARNESS_TEST_DIRECTORY/pass-code.sh"
 
 test_expect_success 'Test "generate" command' '
 	"$PASS" init $KEY1 &&

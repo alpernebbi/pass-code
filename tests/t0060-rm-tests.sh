@@ -3,6 +3,7 @@
 test_description='Test rm'
 cd "$(dirname "$0")"
 . ./setup.sh
+PASS="$SHARNESS_TEST_DIRECTORY/pass-code.sh"
 
 test_expect_success 'Test "rm" command' '
 	"$PASS" init $KEY1 &&

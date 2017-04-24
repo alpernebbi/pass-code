@@ -3,6 +3,7 @@
 test_description='Grep check'
 cd "$(dirname "$0")"
 . ./setup.sh
+PASS="$SHARNESS_TEST_DIRECTORY/pass-code.sh"
 
 test_expect_success 'Make sure grep prints normal lines' '
 	"$PASS" init $KEY1 &&
