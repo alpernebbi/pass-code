@@ -253,9 +253,11 @@ code_filter_subfolder() {
 }
 
 code_filter() {
+	local lowline
 	while read -r line; do
+		lowline="${line,,}"
 		for arg in "$@"; do
-			if [[ -z "${line##*$arg*}" ]]; then
+			if [[ -z "${lowline##*${arg,,}*}" ]]; then
 				echo "$line"
 				break
 			fi
