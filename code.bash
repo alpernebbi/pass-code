@@ -315,6 +315,12 @@ code_positional_args() {
 }
 
 cmd_code_usage() {
+	if [[ "$1" = "$PROGRAM" ]]; then
+		shift
+		cmd_usage "$@"
+		return
+	fi
+
 	cmd_code_version
 	echo
 	cat <<- _EOF_
@@ -342,14 +348,20 @@ cmd_code_usage() {
 	        List whichever pass-code-names in the .passcode file
 	        correspond to the given decoded names. Outputs one line
 	        with the decoded name (or an empty line) per argument.
-	    $PROGRAM code [help]
-	        Show this message.
-	    $PROGRAM code version
-	        Show version information.
+	    $PROGRAM code [help] [$PROGRAM]
+	        Show this message, or the "$PROGRAM help" message.
+	    $PROGRAM code version [$PROGRAM]
+	        Show version information for pass-code or $PROGRAM.
 	_EOF_
 }
 
 cmd_code_version() {
+	if [[ "$1" = "$PROGRAM" ]]; then
+		shift
+		cmd_version "$@"
+		return
+	fi
+
 	cat <<- EOF
 	$PROGRAM-code version 0.1.0
 	EOF
