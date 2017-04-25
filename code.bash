@@ -586,6 +586,16 @@ cmd_code_test() {
 	exit 0
 }
 
+cmd_code_lookup() {
+	code_decrypt
+	mode="$1"
+	shift
+
+	for x in "$@"; do
+		echo "${codec["$mode$x"]}"
+	done
+}
+
 case "$1" in
 	init)                 shift; cmd_init "$@" ;;
 	version|--version)    shift; cmd_code_version "$@" ;;
@@ -601,5 +611,7 @@ case "$1" in
 	copy|cp)              shift; cmd_code_cpmvrm "copy" "$@" ;;
 	git)                  shift; cmd_git "$@" ;;
 	test)                 shift; cmd_code_test "$@" ;;
+	encode|enc)           shift; cmd_code_lookup "Dx" "$@";;
+	decode|dec)           shift; cmd_code_lookup "Ex" "$@";;
 	*) exit 1;;
 esac
