@@ -162,7 +162,7 @@ code_format_as_tree() {
 
 	# Sorted list of files, and first-level items
 	local -a all_files fs
-	all_files=($(cat))
+	readarray all_files -t
 
 	# Figure out first-level items, with dirs/ and files
 	for f in "${all_files[@]}"; do
