@@ -314,6 +314,41 @@ code_positional_args() {
 	done
 }
 
+cmd_code_usage() {
+	cmd_code_version
+	echo
+	cat <<- _EOF_
+	Usage:
+	    $PROGRAM code init [args...]
+	        No pass-code specific initialization is done, instead
+	        passes the options to "$PROGRAM init" unconditionally.
+	        The pass-code extension does not support encrypted
+	        subfolders (with the --path option), but still passes
+	        these options through.
+	    $PROGRAM code git [args...]
+	        No pass-code specific manipulation is done to the
+	        arguments, stdin or the stdout. Instead, the given
+	        options are simply passed to "$PROGRAM git".
+	    $PROGRAM code pass-command [args...]
+	        See help text for "$PROGRAM pass-command". When
+	        necessary, the pass-names are encoded/decoded, file
+	        mappings are created/changed/removed and written to the
+	        ".passcode" pass-name in the password storage.
+	    $PROGRAM code encode pass-code-name...
+	        List whichever pass-names in the password storage
+	        correspond to the given encoded names. Outputs one line
+	        with the encoded name (or an empty line) per argument.
+	    $PROGRAM code decode pass-name...
+	        List whichever pass-code-names in the .passcode file
+	        correspond to the given decoded names. Outputs one line
+	        with the decoded name (or an empty line) per argument.
+	    $PROGRAM code [help]
+	        Show this message.
+	    $PROGRAM code version
+	        Show version information.
+	_EOF_
+}
+
 cmd_code_version() {
 	cat <<- EOF
 	$PROGRAM-code version 0.1.0
@@ -598,6 +633,7 @@ cmd_code_lookup() {
 
 case "$1" in
 	init)                 shift; cmd_init "$@" ;;
+	help|--help)          shift; cmd_code_usage "$@" ;;
 	version|--version)    shift; cmd_code_version "$@" ;;
 	list|ls)              shift; cmd_code_ls "$@" ;;
 	show)                 shift; cmd_code_show "$@" ;;
@@ -613,5 +649,5 @@ case "$1" in
 	test)                 shift; cmd_code_test "$@" ;;
 	encode|enc)           shift; cmd_code_lookup "Dx" "$@";;
 	decode|dec)           shift; cmd_code_lookup "Ex" "$@";;
-	*) exit 1;;
+	*)                           cmd_code_usage "$@" ;;
 esac
