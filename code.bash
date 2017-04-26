@@ -148,7 +148,7 @@ code_format_as_tree() {
 
 	# Print box-drawing chars if $LANG supports it
 	local brnc pipe crnr blnk
-	if [[ "$LANG" == *utf8* || "$LANG" == *UTF-8* ]]; then
+	if [[ "${LANG,,}" == *utf8* || "${LANG,,}" == *utf-8* ]]; then
 		brnc='├──'
 		pipe='│  '
 		crnr='└──'
