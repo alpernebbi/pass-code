@@ -22,10 +22,15 @@ codec_modified=false
 # Decrypt the .passcode file and put it to an associative array so we
 # don't need to re-decrpyt it every time we encode/decode something.
 code_decrypt() {
-	while read -r pair; do
-		codec["Dx${pair##*:}"]="${pair%%:*}"
-		codec["Ex${pair%%:*}"]="${pair##*:}"
-	done <<< "$(cmd_show .passcode 2>/dev/null)"
+	local passcode
+	if passcode="$(cmd_show .passcode 2>/dev/null)" ; then
+		while read -r pair; do
+			codec["Dx${pair##*:}"]="${pair%%:*}"
+			codec["Ex${pair%%:*}"]="${pair##*:}"
+		done <<< "$passcode"
+	else
+		die "Could not decrypt pass-code store"
+	fi
 }
 
 # Will not print anything if code_decrypt not run or key not in mapping
